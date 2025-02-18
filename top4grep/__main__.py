@@ -19,7 +19,7 @@ Session = sessionmaker(bind=engine)
 logger = new_logger("Top4Grep")
 stemmer = PorterStemmer()
 
-CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS"]
+CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS", "OSDI"]
 
 # Function to check and download 'punkt' if not already available
 def check_and_download_punkt():
@@ -40,15 +40,21 @@ def fuzzy_match(title):
 def existed_in_tokens(tokens, keywords):
     return all(map(lambda k: stemmer.stem(k.lower()) in tokens, keywords))
 
-def grep(keywords, abstract):
+def grep(keywords, abstract, conference=[]):
     # TODO: currently we only grep either from title or from abstract, also grep from other fields in the future maybe?
     if abstract:
         constraints = [Paper.abstract.contains(x) for x in keywords]
+        if conference:
+            constraints.extend([Paper.conference == conf for conf in conference])
+
         with Session() as session:
             papers = session.query(Paper).filter(*constraints).all()
         filter_paper = filter(lambda p: existed_in_tokens(fuzzy_match(p.abstract.lower()), keywords), papers)
     else:
         constraints = [Paper.title.contains(x) for x in keywords]
+        if conference:
+            constraints.extend([Paper.conference == conf for conf in conference])
+
         with Session() as session:
             papers = session.query(Paper).filter(*constraints).all()
         #check whether whether nltk tokenizer data is downloaded
@@ -72,6 +78,7 @@ def main():
     parser = argparse.ArgumentParser(description='Scripts to query the paper database',
                                      usage="%(prog)s [options] -k <keywords>")
     parser.add_argument('-k', type=str, help="keywords to grep, separated by ','. For example, 'linux,kernel,exploit'", default='')
+    parser.add_argument('-c', type=str, help="conference to look for, empty indicates all", default="")
     parser.add_argument('--build-db', action="store_true", help="Builds the database of conference papers")
     parser.add_argument('--abstract', action="store_true", help="Involve abstract into the database's building or query (Need Chrome for building)")
     args = parser.parse_args()
@@ -84,7 +91,9 @@ def main():
         else:
             logger.warning("No keyword is provided. Return all the papers.")
 
-        papers = grep(keywords, args.abstract)
+        conf = [x.strip() for x in args.c.split(',')]
+
+        papers = grep(keywords, args.abstract, conf)
         logger.debug(f"Found {len(papers)} papers")
 
         show_papers(papers)

@@ -13,12 +13,13 @@ from .abstract import Abstracts
 logger = new_logger("DB")
 logger.setLevel('WARNING')
 
-CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS"]
+CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS", "OSDI"]
 NAME_MAP = {
         "NDSS": "ndss",
         "IEEE S&P": "sp",
         "USENIX": "uss",
         "CCS": "ccs",
+        "OSDI": "osdi",
         }
 PACKAGE_DIR = Path(__file__).resolve().parent
 DB_PATH = PACKAGE_DIR / "data" / "papers.db"
@@ -68,7 +69,7 @@ def get_papers(name, year, build_abstract):
                 save_paper(name, year, title, authors, abstract)
             cnt += 1
     except Exception as e:
-        logger.warning(f"Failed to obtain papers at {name}-{year}")
+        logger.warning(f"Failed to obtain papers at {name}-{year}: {e}")
 
     logger.debug(f"Found {cnt} papers at {name}-{year}...")
 
@@ -77,3 +78,8 @@ def build_db(build_abstract):
     for conf in CONFERENCES:
         for year in range(2000, datetime.now().year+1):
             get_papers(conf, year, build_abstract)
+
+if __name__ == '__main__':
+    logger.setLevel('DEBUG')
+    for year in range(2000, datetime.now().year+1):
+        get_papers('OSDI', year, True)

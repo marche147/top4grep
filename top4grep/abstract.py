@@ -153,15 +153,20 @@ class AbstractCCS(BasePaperAbstract):
         # ap_list = [x.text for x in abstract_paragraphs]
         # return '\n'.join(ap_list)
 
+class AbstractOSDI(AbstractUSENIX):
+    pass
+
 NDSS = AbstractNDSS()
 SP = AbstractSP()
 USENIX = AbstractUSENIX()
 CCS = AbstractCCS()
+OSDI = AbstractOSDI()
 
 Abstracts = {'NDSS': NDSS,
              'IEEE S&P': SP,
              'USENIX': USENIX,
-             'CCS': CCS}
+             'CCS': CCS,
+             'OSDI': OSDI}
 
 if __name__ == '__main__':
     logger.setLevel('DEBUG')
@@ -170,4 +175,5 @@ if __name__ == '__main__':
     # print(SP.get_abstract_from_publisher('https://doi.org/10.1109/SP46215.2023.10179381', []))
     # print(USENIX.get_abstract_from_publisher('https://www.usenix.org/conference/usenixsecurity20/presentation/cremers', []))
     # print(CCS.get_abstract_from_publisher('https://doi.org/10.1145/3576915.3616615', []))
-    print(NDSS.get_abstract_from_publisher('https://www.ndss-symposium.org/ndss2015/i-do-not-know-what-you-visited-last-summer-protecting-users-third-party-web-tracking', []))
+    # print(NDSS.get_abstract_from_publisher('https://www.ndss-symposium.org/ndss2015/i-do-not-know-what-you-visited-last-summer-protecting-users-third-party-web-tracking', []))
+    print(OSDI.get_abstract_from_publisher('https://www.usenix.org/conference/osdi24/presentation/zhong-yuhong', [])) 
