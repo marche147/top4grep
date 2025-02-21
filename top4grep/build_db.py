@@ -11,15 +11,17 @@ from .db import Base, Paper
 from .abstract import Abstracts
 
 logger = new_logger("DB")
-logger.setLevel('WARNING')
+logger.setLevel('INFO')
 
-CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS", "OSDI"]
+CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS", "OSDI", "PLDI", "SOSP"]
 NAME_MAP = {
         "NDSS": "ndss",
         "IEEE S&P": "sp",
         "USENIX": "uss",
         "CCS": "ccs",
         "OSDI": "osdi",
+        "PLDI": "pldi",
+        "SOSP": "sosp",
         }
 PACKAGE_DIR = Path(__file__).resolve().parent
 DB_PATH = PACKAGE_DIR / "data" / "papers.db"
@@ -41,6 +43,12 @@ def paper_exist(conf, year, title, authors, abstract):
     paper = session.query(Paper).filter(Paper.conference==conf, Paper.year==year, Paper.title==title, Paper.abstract==abstract).first()
     session.close()
     return paper is not None
+
+def remove_conf_papers(conf):
+    session = Session()
+    paper = session.query(Paper).filter(Paper.conference == conf).delete()
+    session.commit()
+    session.close()
 
 def get_papers(name, year, build_abstract):
     cnt = 0
@@ -74,9 +82,19 @@ def get_papers(name, year, build_abstract):
     logger.debug(f"Found {cnt} papers at {name}-{year}...")
 
 
-def build_db(build_abstract):
+def build_db(build_abstract, confs=[]):
+    START_YEARS = {
+            'PLDI': 2000,   # it started earlier but we skip those...
+            'SOSP': 2000,   # also skip the early ones...
+            }
     for conf in CONFERENCES:
-        for year in range(2000, datetime.now().year+1):
+        logger.info(f"Building paper DB for {conf}")
+        if confs and conf not in confs:
+            continue
+        start_year = 2000
+        if conf in START_YEARS:
+            start_year = START_YEARS[conf]
+        for year in range(start_year, datetime.now().year+1):
             get_papers(conf, year, build_abstract)
 
 if __name__ == '__main__':

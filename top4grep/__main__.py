@@ -19,7 +19,7 @@ Session = sessionmaker(bind=engine)
 logger = new_logger("Top4Grep")
 stemmer = PorterStemmer()
 
-CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS", "OSDI"]
+CONFERENCES = ["NDSS", "IEEE S&P", "USENIX", "CCS", "OSDI", "PLDI", "SOSP"]
 
 # Function to check and download 'punkt' if not already available
 def check_and_download_punkt():
@@ -99,7 +99,8 @@ def main():
         show_papers(papers)
     elif args.build_db:
         print("Building db...")
-        build_db(args.abstract)
+        conf = [x.strip() for x in args.c.split(',')]
+        build_db(args.abstract, conf)
 
 
 if __name__ == "__main__":

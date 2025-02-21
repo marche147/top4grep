@@ -156,17 +156,35 @@ class AbstractCCS(BasePaperAbstract):
 class AbstractOSDI(AbstractUSENIX):
     pass
 
+class AbstractPLDI(BasePaperAbstract):
+    def get_abstract_from_publisher(self, url, authors):
+        logger.debug(f"URL: {url}")
+        r = requests.get(url)
+        assert r.status_code == 200
+
+        html = BeautifulSoup(r.text, 'html.parser')
+        section = html.find('section', {'id': 'abstract'})
+        paragraph = section.find('div', {'role': 'paragraph'})
+        return paragraph.get_text(separator='\n')
+
+class AbstractSOSP(AbstractPLDI):
+    pass
+
 NDSS = AbstractNDSS()
 SP = AbstractSP()
 USENIX = AbstractUSENIX()
 CCS = AbstractCCS()
 OSDI = AbstractOSDI()
+PLDI = AbstractPLDI()
+SOSP = AbstractSOSP()
 
 Abstracts = {'NDSS': NDSS,
              'IEEE S&P': SP,
              'USENIX': USENIX,
              'CCS': CCS,
-             'OSDI': OSDI}
+             'OSDI': OSDI,
+             'PLDI': PLDI,
+             'SOSP': SOSP}
 
 if __name__ == '__main__':
     logger.setLevel('DEBUG')
@@ -176,4 +194,5 @@ if __name__ == '__main__':
     # print(USENIX.get_abstract_from_publisher('https://www.usenix.org/conference/usenixsecurity20/presentation/cremers', []))
     # print(CCS.get_abstract_from_publisher('https://doi.org/10.1145/3576915.3616615', []))
     # print(NDSS.get_abstract_from_publisher('https://www.ndss-symposium.org/ndss2015/i-do-not-know-what-you-visited-last-summer-protecting-users-third-party-web-tracking', []))
-    print(OSDI.get_abstract_from_publisher('https://www.usenix.org/conference/osdi24/presentation/zhong-yuhong', [])) 
+    # print(OSDI.get_abstract_from_publisher('https://www.usenix.org/conference/osdi24/presentation/zhong-yuhong', [])) 
+    print(PLDI.get_abstract_from_publisher("https://doi.org/10.1145/3519939.3523445", []))
